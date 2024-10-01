@@ -3,21 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple 2D Game</title>
-    <style>
-        canvas {
-            display: block;
-            margin: 0 auto;
-            background-color: #f0f0f0;
+    <title>Three.js Basic Setup</title>
+    <script type="importmap">
+        {
+            "imports": {
+              "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+              "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+            }
         }
-    </style>
-</head>
-<body>
-    <canvas id="gameCanvas" width="600" height="400"></canvas>
-    <script src="game.js"></script>
-</body>
-</html>
+      </script>
+        <script type="module" src="script.js">
 
-<!-- TODO :  - fix accelaration bitween loops
-        - find a real transition bitwin loops
-        - Y movement and top / bottom collision -->
+        </script>
+</head>
+<body></canvas></body>
+</html>
