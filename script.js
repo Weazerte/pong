@@ -1,5 +1,8 @@
 import * as THREE from 'three';
 
+const canvas = document.getElementById('gameCanvas');
+
+
 class Player {
     constructor(x, y, z, size, speed, dy, dx, color){
         this.x = x;
@@ -100,42 +103,63 @@ class ball {
         return false;  // No collision
     }
 
-    isBallinWall(){
-        if (this.y + this.radius >= window.innerHeight || this.y - this.radius <= window.innerHeight) {
+    isBallinYWall(){
+        if (this.y + this.radius >= 8 || this.y - this.radius <= -8) {
             return true;
         }
         return false;
     }
 
-    // Move the ball
-    mooveBall() {
-    // Move the ball based on direction
-    if (this.direction_x === 0) {
-        console.log(player_left.getx(), player_left.gety(), player_left.getwidth(), player_left.getheight());
-        // Check collision with the left paddl
-        if (this.isBallinPlayer(player_left.getx(), player_left.gety(), player_left.getwidth(), player_left.getheight())) {
-            this.direction_x = 1;  // Reverse direction
-            this.x = player_left.getx() + player_left.getwidth() / 2 + this.radius; // Position the ball just outside the paddle
-        } else {
-            if (this.isBallinWall()){
-                this.direction_y = !this.direction_y;  // Reverse direction
-            }
-            this.x -= this.speed;
+    isBallinXWall(){
+        if (this.x + this.radius >= 15 || this.x - this.radius <= -15) {
+            return true;
         }
-    } else if (this.direction_x === 1) {
-        // Check collision with the right paddle
-        if (this.isBallinPlayer(player_right.getx(), player_right.gety(), player_right.getwidth(), player_right.getheight())) {
-            this.direction_x = 0;  // Reverse direction
-            this.x = player_right.getx() - player_right.getwidth() / 2 - this.radius; // Position the ball just outside the paddle
-        } else {
-            if (this.isBallinWall()){
-                this.direction_y = !this.direction_y;  // Reverse direction
-            }
-            this.y += this.speed;
-            this.x += this.speed;
+        return false;
+    }
+
+    wichDirection(){
+        if (this.y > player_left.gety()){
+            return 1;
+        }else if (this.y = player_left.gety()){
+            return 0;
+        }else {
+            return -1;
         }
     }
-}
+
+    // Move the ball
+    mooveBall() {
+        // Move the ball based on direction
+        if (this.direction_x === -1) {
+            // Check collision with the left paddle
+            if (this.isBallinPlayer(player_left.getx(), player_left.gety(), player_left.getwidth(), player_left.getheight())) {
+                this.direction_y =  this.wichDirection();
+                this.x = player_left.getx() + player_left.getwidth() + this.radius;  // Move ball just outside the paddle
+            } else if (this.isBallinXWall()) {
+                this.direction_x = 1;  // Reverse horizontal direction
+            } else {
+                if (this.isBallinYWall()) {
+                    this.direction_y *= -1;  // Reverse vertical direction
+                }
+                this.x -= this.speed;  // Move left
+                this.y += this.speed * this.direction_y;  // Adjust vertical position
+            }
+        } else if (this.direction_x === 1) {
+            // Check collision with the right paddle
+            if (this.isBallinPlayer(player_right.getx(), player_right.gety(), player_right.getwidth(), player_right.getheight())) {
+                this.direction_y =  this.wichDirection(); // Reverse horizontal direction
+                this.x = player_right.getx() - this.radius;  // Move ball just outside the paddle
+            } else if (this.isBallinXWall()) {
+                this.direction_x = -1;  // Reverse horizontal direction
+            } else {
+                if (this.isBallinYWall()) {
+                    this.direction_y *= -1;  // Reverse vertical direction
+                }
+                this.x += this.speed;  // Move right
+                this.y += this.speed * this.direction_y;  // Adjust vertical position
+            }
+        }
+    }
 }
 
 const scene = new THREE.Scene();
@@ -144,11 +168,11 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 const geometry = new THREE.BoxGeometry();
-const player_left = new Player(-5, 0, 0, 1, 0.2, 0, 0, 'purple');
+const player_left = new Player(-10, 0, 0, 1, 0.2, 0, 0, 'purple');
 player_left.sceneADD(scene);
-const player_right = new Player(5, 0, 0, 1, 0.2, 0, 0, 'blue');
+const player_right = new Player(10, 0, 0, 1, 0.2, 0, 0, 'blue');
 player_right.sceneADD(scene);
-const balll = new ball(0, 0, 0, 1, 1, 0.1, 0.4, 'red', 0, 1);
+const balll = new ball(0, 0, 0, 1, 1, 0.04, 0.4, 'red', -1, 0);
 balll.sceneADD(scene);
 camera.position.z = 6;
 const light = new THREE.PointLight('', 11111, 100);
@@ -184,12 +208,14 @@ function updatePos() {
     player_right.pCube.position.y = player_right.y;
     player_left.pCube.position.y = player_left.y;
     balll.bSphere.position.x = balll.x;
+    balll.bSphere.position.y = balll.y;
 }
 
 document.addEventListener('keydown', movePlayer);
 document.addEventListener('keyup', stopPlayer);
 
 const animate = function () {
+    console.log(player_left.gety());
     requestAnimationFrame(animate);
     updatePos();
     balll.mooveBall();
