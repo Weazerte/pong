@@ -9,6 +9,7 @@ class Player {
         this.y = y;
         this.z = z;
         this.size = size;
+        this.hitbox = size + 0.4;
         this.speed = speed;
         this.dy = dy;
         this.dx = dx;
@@ -43,6 +44,10 @@ class Player {
 
     getheight(){
         return this.size;
+    }
+
+    getHitBox(){
+        return this.hitbox;
     }
 
     moveUp(){
@@ -87,21 +92,20 @@ class ball {
     }
 
     isBallinPlayer(playerx, playery, playerWidth, playerHeight) {
-        // Calculate the player's boundaries
-        const playerLeft = playerx;
-        const playerRight = playerx + playerWidth;
-        const playerTop = playery;
-        const playerBottom = playery + playerHeight;
+        // Extend the player's hitbox by the ball's radius
+        const playerLeft = playerx - this.radius;  // Extend left by ball radius
+        const playerRight = playerx + playerWidth + this.radius;  // Extend right by ball radius
+        const playerTop = playery - this.radius;  // Extend top by ball radius
+        const playerBottom = playery + playerHeight + this.radius;  // Extend bottom by ball radius
     
-        // X-axis: Check if the ball's left or right edge is within the paddle's X bounds
-        if (this.x + this.radius >= playerLeft && this.x - this.radius <= playerRight) {
-            // Y-axis: Check if the ball's top or bottom edge is within the paddle's Y bounds
-            if (this.y + this.radius >= playerTop && this.y - this.radius <= playerBottom) {
-                return true;  // this is colliding with the paddle
-            }
+        // Check if the center of the ball is within the player's (extended) hitbox
+        if (this.x >= playerLeft && this.x <= playerRight &&
+            this.y >= playerTop && this.y <= playerBottom) {
+            return true;  // Ball is colliding with the paddle
         }
         return false;  // No collision
     }
+    
 
     isBallinYWall(){
         if (this.y + this.radius >= 8 || this.y - this.radius <= -8) {
@@ -133,33 +137,36 @@ class ball {
         if (this.direction_x === -1) {
             // Check collision with the left paddle
             if (this.isBallinPlayer(player_left.getx(), player_left.gety(), player_left.getwidth(), player_left.getheight())) {
-                this.direction_y =  this.wichDirection();
+                this.direction_x = 1;  // Reverse horizontal direction
+                this.direction_y = this.wichDirection();  // Update vertical direction
                 this.x = player_left.getx() + player_left.getwidth() + this.radius;  // Move ball just outside the paddle
             } else if (this.isBallinXWall()) {
-                this.direction_x = 1;  // Reverse horizontal direction
+                this.direction_x = 1;  // Reverse horizontal direction when hitting the left wall
             } else {
                 if (this.isBallinYWall()) {
-                    this.direction_y *= -1;  // Reverse vertical direction
+                    this.direction_y *= -1;  // Reverse vertical direction when hitting top/bottom walls
                 }
-                this.x -= this.speed;  // Move left
+                this.x -= this.speed;  // Continue moving left
                 this.y += this.speed * this.direction_y;  // Adjust vertical position
             }
         } else if (this.direction_x === 1) {
             // Check collision with the right paddle
             if (this.isBallinPlayer(player_right.getx(), player_right.gety(), player_right.getwidth(), player_right.getheight())) {
-                this.direction_y =  this.wichDirection(); // Reverse horizontal direction
+                this.direction_x = -1;  // Reverse horizontal direction
+                this.direction_y = this.wichDirection();  // Update vertical direction
                 this.x = player_right.getx() - this.radius;  // Move ball just outside the paddle
             } else if (this.isBallinXWall()) {
-                this.direction_x = -1;  // Reverse horizontal direction
+                this.direction_x = -1;  // Reverse horizontal direction when hitting the right wall
             } else {
                 if (this.isBallinYWall()) {
-                    this.direction_y *= -1;  // Reverse vertical direction
+                    this.direction_y *= -1;  // Reverse vertical direction when hitting top/bottom walls
                 }
-                this.x += this.speed;  // Move right
+                this.x += this.speed;  // Continue moving right
                 this.y += this.speed * this.direction_y;  // Adjust vertical position
             }
         }
     }
+    
 }
 
 const scene = new THREE.Scene();
