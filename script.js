@@ -1,19 +1,23 @@
 import * as THREE from 'three';
 
 const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
 
+// ----------------- Player Class -----------------
 
 class Player {
-    constructor(x, y, z, size, speed, dy, dx, color){
+    constructor(x, y, z, size, speed, color){
+        this.restX = x;
         this.x = x;
+        this.restY = y;
         this.y = y;
         this.z = z;
         this.size = size;
         this.hitbox = size + 0.4;
         this.speed = speed;
-        this.dy = dy;
-        this.dx = dx;
+        this.dy = 0;
         this.color = color;
+        this.score = 0;
     }
     sceneADD(scene){
         const geometry = new THREE.BoxGeometry();
@@ -62,22 +66,66 @@ class Player {
     moveRight(){
         this.dx += this.speed;
     }
+
+    incrementScore (){
+        this.score += 1;
+    }
+
+    getScore(){
+        return this.score;
+    }
+
+    resetPlayer(){
+        this.x = this.restX;
+        this.y = this.restY;
+        this.dy = 0;
+    }
+
 }
 
+// ----------------- Player related functions -----------------
+
+// Move the players based on key input
+function movePlayer(e) {
+    if (e.code === 'ArrowUp') {
+        player_right.moveUp();
+        // player_right.pCube.rotateZ(0.1);
+    } else if (e.code === 'ArrowDown') {
+        player_right.moveDown();
+    } else if (e.code === 'KeyW') {
+        player_left.moveUp();
+    } else if (e.code === 'KeyS') {
+        player_left.moveDown();
+    }
+}
+
+// Stop the players when the key is released
+function stopPlayer(e) {
+    if (e.code === 'ArrowUp' || e.code === 'ArrowDown') {
+        player_right.dy = 0;
+    } else if (e.code === 'KeyW' || e.code === 'KeyS') {
+        player_left.dy = 0;
+    }
+}
+
+// ----------------- Ball Class -----------------
 
 class ball {
 
-    constructor(x, y, z, width, height, speed, radius, color, direction_x, direction_y){
+    constructor(x, y, z, width, height, speed, radius, color){
         this.x = x;
+        this.resetX = x;
         this.y = y;
+        this.resetY = y;
         this.z = z;
         this.width = width;
         this.height = height;
         this.speed = speed;
+        this.resetSpeed = speed;
         this.radius = radius;
         this.color = color;
-        this.direction_x = direction_x;
-        this.direction_y = direction_y;
+        this.direction_x = -1;
+        this.direction_y = 0;
     }
 
     sceneADD(scene){
@@ -140,8 +188,6 @@ class ball {
                 this.direction_x = 1;  // Reverse horizontal direction
                 this.direction_y = this.wichDirection();  // Update vertical direction
                 this.x = player_left.getx() + player_left.getwidth() + this.radius;  // Move ball just outside the paddle
-            } else if (this.isBallinXWall()) {
-                this.direction_x = 1;  // Reverse horizontal direction when hitting the left wall
             } else {
                 if (this.isBallinYWall()) {
                     this.direction_y *= -1;  // Reverse vertical direction when hitting top/bottom walls
@@ -155,8 +201,6 @@ class ball {
                 this.direction_x = -1;  // Reverse horizontal direction
                 this.direction_y = this.wichDirection();  // Update vertical direction
                 this.x = player_right.getx() - this.radius;  // Move ball just outside the paddle
-            } else if (this.isBallinXWall()) {
-                this.direction_x = -1;  // Reverse horizontal direction when hitting the right wall
             } else {
                 if (this.isBallinYWall()) {
                     this.direction_y *= -1;  // Reverse vertical direction when hitting top/bottom walls
@@ -167,47 +211,17 @@ class ball {
         }
     }
     
-}
-
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(100, window.innerWidth / window.innerHeight, 5, 100);
-const renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
-const geometry = new THREE.BoxGeometry();
-const player_left = new Player(-10, 0, 0, 1, 0.2, 0, 0, 'purple');
-player_left.sceneADD(scene);
-const player_right = new Player(10, 0, 0, 1, 0.2, 0, 0, 'blue');
-player_right.sceneADD(scene);
-const balll = new ball(0, 0, 0, 1, 1, 0.04, 0.4, 'red', -1, 0);
-balll.sceneADD(scene);
-camera.position.z = 6;
-const light = new THREE.PointLight('', 11111, 100);
-scene.add(light);
-light.position.set(0, 0, 20);
-
-// Move the players based on key input
-function movePlayer(e) {
-    if (e.code === 'ArrowUp') {
-        player_right.moveUp();
-        // player_right.pCube.rotateZ(0.1);
-    } else if (e.code === 'ArrowDown') {
-        player_right.moveDown();
-    } else if (e.code === 'KeyW') {
-        player_left.moveUp();
-    } else if (e.code === 'KeyS') {
-        player_left.moveDown();
+    resetBall(xdir){
+        this.x = this.resetX;
+        this.y = this.resetY;
+        this.speed = this.resetSpeed;
+        this.direction_x = xdir;
+        this.direction_y = 0;
     }
+
 }
 
-// Stop the players when the key is released
-function stopPlayer(e) {
-    if (e.code === 'ArrowUp' || e.code === 'ArrowDown') {
-        player_right.dy = 0;
-    } else if (e.code === 'KeyW' || e.code === 'KeyS') {
-        player_left.dy = 0;
-    }
-}
+// ----------------- Ball and Player related functions -----------------
 
 function updatePos() {
     player_right.y += player_right.dy;
@@ -218,15 +232,76 @@ function updatePos() {
     balll.bSphere.position.y = balll.y;
 }
 
+function checkXCollision(){
+    if (balll.isBallinXWall()){
+        if (balll.x < 0){
+            player_right.incrementScore();
+            balll.resetBall(-1);
+        }else {
+            player_left.incrementScore();
+            balll.resetBall(1);
+        }
+        player_left.resetPlayer();
+        player_right.resetPlayer();
+        return true;
+    }
+    return false;
+}
+
+// ----------------- 3D setup -----------------
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(100, window.innerWidth / window.innerHeight, 5, 100);
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+const geometry = new THREE.BoxGeometry();
+const player_left = new Player(-10, 0, 0, 1, 0.2, 'purple');
+player_left.sceneADD(scene);
+const player_right = new Player(10, 0, 0, 1, 0.2, 'blue');
+player_right.sceneADD(scene);
+const balll = new ball(0, 0, 0, 1, 1, 0.04, 0.4, 'red');
+balll.sceneADD(scene);
+camera.position.z = 6;
+const light = new THREE.PointLight('', 11111, 100);
+scene.add(light);
+light.position.set(0, 0, 20);
+
+// ----------------- ath function -----------------
+
+function drawScore(){
+    ctx.font = '48px serif';
+    ctx.fillStyle = 'red';
+    ctx.fillText(player_left.getScore(), 100, 100);
+    ctx.fillText(player_right.getScore(), 300, 100);
+}
+
 document.addEventListener('keydown', movePlayer);
 document.addEventListener('keyup', stopPlayer);
 
+function getMousePos(canvas, event) {
+    const rect = canvas.getBoundingClientRect(); // Get canvas bounds
+    const x = event.clientX - rect.left;         // Adjust X coordinate
+    const y = event.clientY - rect.top;          // Adjust Y coordinate
+    return { x: x, y: y };
+}
+
+canvas.addEventListener('mousemove', function(event) {
+    const mousePos = getMousePos(canvas, event);
+    console.log('Mouse Position: ', mousePos);
+});
+
 const animate = function () {
-    console.log(player_left.gety());
-    requestAnimationFrame(animate);
-    updatePos();
-    balll.mooveBall();
-    renderer.render(scene, camera);
+    // console.log(player_left.gety());
+    if (checkXCollision()){    
+        requestAnimationFrame(animate);
+        drawScore();
+        updatePos();
+        balll.mooveBall();
+        renderer.render(scene, camera);
+        
+        ctx.fill();
+    }
 };
 
 
