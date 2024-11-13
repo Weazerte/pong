@@ -1,8 +1,6 @@
 import * as THREE from 'three';
 
 const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-
 // ----------------- Player Class -----------------
 
 class Player {
@@ -17,7 +15,7 @@ class Player {
         this.speed = speed;
         this.dy = 0;
         this.color = color;
-        this.score = 0;
+        this.scoreCount = 0;
     }
     sceneADD(scene){
         const geometry = new THREE.BoxGeometry();
@@ -27,6 +25,11 @@ class Player {
         cube.position.x = this.x;
         cube.position.y = this.y;
         cube.position.z = this.z;
+        // const scoreprompt = new THREE.TextGeometry('Score: ' + this.scoreCount, {
+        //     font: 'helvetiker',
+        //     size: 0.5,
+        //     height: 0.1,
+        // });
         scene.add(cube);
     }
     
@@ -68,11 +71,11 @@ class Player {
     }
 
     incrementScore (){
-        this.score += 1;
+        this.scoreCount += 1;
     }
 
     getScore(){
-        return this.score;
+        return this.scoreCount;
     }
 
     resetPlayer(){
@@ -172,7 +175,7 @@ class ball {
     wichDirection(){
         if (this.y > player_left.gety()){
             return 1;
-        }else if (this.y = player_left.gety()){
+        }else if (this.y === player_left.gety()){
             return 0;
         }else {
             return -1;
@@ -180,7 +183,7 @@ class ball {
     }
 
     // Move the ball
-    mooveBall() {
+    moveBall() {
         // Move the ball based on direction
         if (this.direction_x === -1) {
             // Check collision with the left paddle
@@ -260,7 +263,7 @@ const player_left = new Player(-10, 0, 0, 1, 0.2, 'purple');
 player_left.sceneADD(scene);
 const player_right = new Player(10, 0, 0, 1, 0.2, 'blue');
 player_right.sceneADD(scene);
-const balll = new ball(0, 0, 0, 1, 1, 0.04, 0.4, 'red');
+const balll = new ball(0, 0, 0, 1, 1, 0.1, 0.4, 'red');
 balll.sceneADD(scene);
 camera.position.z = 6;
 const light = new THREE.PointLight('', 11111, 100);
@@ -269,12 +272,11 @@ light.position.set(0, 0, 20);
 
 // ----------------- ath function -----------------
 
-function drawScore(){
-    ctx.font = '48px serif';
-    ctx.fillStyle = 'red';
-    ctx.fillText(player_left.getScore(), 100, 100);
-    ctx.fillText(player_right.getScore(), 300, 100);
+const updateScore = function(){
+    document.getElementById('PLscore').innerText = `Score: ${player_left.getScore()}`;
+    document.getElementById('PRscore').innerText = `Score: ${player_right.getScore()}`;
 }
+
 
 document.addEventListener('keydown', movePlayer);
 document.addEventListener('keyup', stopPlayer);
@@ -286,21 +288,19 @@ function getMousePos(canvas, event) {
     return { x: x, y: y };
 }
 
-canvas.addEventListener('mousemove', function(event) {
-    const mousePos = getMousePos(canvas, event);
-    console.log('Mouse Position: ', mousePos);
-});
+// canvas.addEventListener('mousemove', function(event) {
+//     const mousePos = getMousePos(canvas, event);
+//     // console.log('Mouse Position: ', mousePos);
+// });
 
 const animate = function () {
     // console.log(player_left.gety());
-    if (checkXCollision()){    
-        requestAnimationFrame(animate);
-        drawScore();
+    requestAnimationFrame(animate);
+    if (!checkXCollision()){    
+        updateScore();
         updatePos();
-        balll.mooveBall();
+        balll.moveBall();
         renderer.render(scene, camera);
-        
-        ctx.fill();
     }
 };
 
