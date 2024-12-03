@@ -25,11 +25,7 @@ class Player {
         cube.position.x = this.x;
         cube.position.y = this.y;
         cube.position.z = this.z;
-        // const scoreprompt = new THREE.TextGeometry('Score: ' + this.scoreCount, {
-        //     font: 'helvetiker',
-        //     size: 0.5,
-        //     height: 0.1,
-        // });
+
         scene.add(cube);
     }
     
@@ -58,10 +54,12 @@ class Player {
     }
 
     moveUp(){
-        this.dy += this.speed;
+        if (this.y + this.size < 8)
+            this.dy += this.speed;
     }
     moveDown(){
-        this.dy -= this.speed;
+        if (this.y > -8)
+            this.dy -= this.speed;
     }
     moveLeft(){
         this.dx -= this.speed;
@@ -91,14 +89,14 @@ class Player {
 // Move the players based on key input
 function movePlayer(e) {
     if (e.code === 'ArrowUp') {
-        player_right.moveUp();
+            player_right.moveUp();
         // player_right.pCube.rotateZ(0.1);
     } else if (e.code === 'ArrowDown') {
-        player_right.moveDown();
+            player_right.moveDown();
     } else if (e.code === 'KeyW') {
-        player_left.moveUp();
+            player_left.moveUp();
     } else if (e.code === 'KeyS') {
-        player_left.moveDown();
+            player_left.moveDown();
     }
 }
 
@@ -157,7 +155,6 @@ class ball {
         return false;  // No collision
     }
     
-
     isBallinYWall(){
         if (this.y + this.radius >= 8 || this.y - this.radius <= -8) {
             return true;
@@ -229,8 +226,22 @@ class ball {
 function updatePos() {
     player_right.y += player_right.dy;
     player_left.y += player_left.dy;
+
+    if (player_right.y + player_right.getheight() > 8) {
+        player_right.y = 8 - player_right.getheight();
+    } else if (player_right.y < -8) {
+        player_right.y = -8;
+    }
+
+    if (player_left.y + player_left.getheight() > 8) {
+        player_left.y = 8 - player_left.getheight();
+    } else if (player_left.y < -8) {
+        player_left.y = -8;
+    }
+
     player_right.pCube.position.y = player_right.y;
     player_left.pCube.position.y = player_left.y;
+
     balll.bSphere.position.x = balll.x;
     balll.bSphere.position.y = balll.y;
 }
@@ -253,19 +264,22 @@ function checkXCollision(){
 
 // ----------------- 3D setup -----------------
 
+const renderer = new THREE.WebGLRenderer({ canvas });
+renderer.setSize(canvas.width, canvas.height);
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(100, window.innerWidth / window.innerHeight, 5, 100);
-const renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
+const camera = new THREE.PerspectiveCamera(100, canvas.width / canvas.height, 5, 100);
+camera.position.z = 6;
+
 const geometry = new THREE.BoxGeometry();
 const player_left = new Player(-10, 0, 0, 1, 0.2, 'purple');
 player_left.sceneADD(scene);
+
 const player_right = new Player(10, 0, 0, 1, 0.2, 'blue');
 player_right.sceneADD(scene);
+
 const balll = new ball(0, 0, 0, 1, 1, 0.1, 0.4, 'red');
 balll.sceneADD(scene);
-camera.position.z = 6;
+
 const light = new THREE.PointLight('', 11111, 100);
 scene.add(light);
 light.position.set(0, 0, 20);
@@ -277,7 +291,6 @@ const updateScore = function(){
     document.getElementById('PRscore').innerText = `Score: ${player_right.getScore()}`;
 }
 
-
 document.addEventListener('keydown', movePlayer);
 document.addEventListener('keyup', stopPlayer);
 
@@ -288,13 +301,7 @@ function getMousePos(canvas, event) {
     return { x: x, y: y };
 }
 
-// canvas.addEventListener('mousemove', function(event) {
-//     const mousePos = getMousePos(canvas, event);
-//     // console.log('Mouse Position: ', mousePos);
-// });
-
 const animate = function () {
-    // console.log(player_left.gety());
     requestAnimationFrame(animate);
     if (!checkXCollision()){    
         updateScore();

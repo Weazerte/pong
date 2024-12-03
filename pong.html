@@ -3,15 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Three.js Basic Setup</title>
-    <!-- <canvas id="gameCanvas" width="600" height="400"></canvas> -->
-    <div id="PLscore" style="position: absolute; top: 20px; left: 20px; color: white; font-size: 50px;">
+    <title>Pong Game</title>
+    <style>
+      /* .chat-box {
+            height: 75vh;
+            background-color: #3498db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        } */
+        
+    </style>
+    </head>
+    <body>
+
+    <canvas id="gameCanvas" width="1000" height="600" style="background-color: black;"></canvas>
+    <div id="PLscore" style="position: absolute; top: 20px; left: 20px; color: white; font-size: 20px;">
       Player left Score: 0
     </div>  
-    <div id="PRscore" style="position: absolute; top: 50px; right: 20px; color: white; font-size: 50px;">
+
+    <div id="PRscore" style="position: absolute; top: 20px; right: 20px; color: white; font-size: 20px;">
       Player right Score: 0
-    </div>  
-    <script type="importmap">
+    </div>
+
+
+
+      <script type="importmap">
         {
             "imports": {
               "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
@@ -19,8 +38,18 @@
             }
         }
       </script>
-      
-</head>
-<body>
-  <script type="module" src="script.js"></script></body>
+
+      <!-- <div class="chat-container">
+        <div class="chat-box" id="chatBox">
+           Les messages s'afficheront ici 
+        </div>
+        
+        <div class="chat-input">
+          <input type="text" id="messageInput" placeholder="typing ...." />
+          <button onclick="sendMessage()">send</button>
+        </div> 
+      </div>
+      <script type="module" src="chat.js"></script> -->
+      <script type="module" src="script.js"></script></body>
+    </body>
 </html>
