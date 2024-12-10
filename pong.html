@@ -4,18 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pong Game</title>
-    <style>
-      /* .chat-box {
-            height: 75vh;
-            background-color: #3498db;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 24px;
-        } */
-        
-    </style>
+    
     </head>
     <body>
 
@@ -39,17 +28,75 @@
         }
       </script>
 
-      <!-- <div class="chat-container">
-        <div class="chat-box" id="chatBox">
-           Les messages s'afficheront ici 
+      <div id="chat"> 
+        <div id="messages"></div>
+        <div id="inputArea">
+            <input type="text" id="messageInput" placeholder="Enter your message">
+            <button id="sendButton">Send</button>
         </div>
+    </div>
+    <style>
         
-        <div class="chat-input">
-          <input type="text" id="messageInput" placeholder="typing ...." />
-          <button onclick="sendMessage()">send</button>
-        </div> 
-      </div>
-      <script type="module" src="chat.js"></script> -->
+        #chat {
+            position: fixed; /* Fixé par rapport à la fenêtre du navigateur */
+            bottom: 20px; /* Distance du bas */
+            right: 20px; /* Distance de la droite */
+            width: 400px; /* Largeur de la boîte */
+            background-color: #ffffff; /* Couleur de fond */
+            border: 1px solid #ccc; /* Bordure grise */
+            border-radius: 10px; /* Coins arrondis */
+            overflow: hidden; /* Évite que le contenu dépasse */
+            font-family: Arial, sans-serif;
+        }
+      
+        /* Zone des messages */
+        #messages {
+            height: 200px; 
+            overflow-y: auto; /* Permet le défilement si le contenu dépasse */
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+            background-color: #fff;
+        }
+      
+        #inputArea {
+        display: flex; /* Enables flexbox layout */
+        align-items: center; /* Vertically aligns children */
+        padding: 5px;
+        gap: 5px; /* Space between input and button */
+        }
+
+        /* Zone d'entrée */
+        #messageInput {
+            width: calc(100% - 60px);
+            padding: 5px;
+            border: none;
+            outline: none;
+        }
+      
+        /* Bouton d'envoi */
+        #sendButton {
+            width: 50px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+        }
+      
+        /* Bouton d'envoi au survol */
+        #sendButton:hover {
+            background-color: #0056b3;
+        }
+      
+        /* Zone d'entrée et bouton groupés */
+        #chat input,
+        #chat button {
+            display: inline-block;
+            vertical-align: middle;
+        }
+      </style>
+      <script src="chat.js"></script>
+     
       <script type="module" src="script.js"></script></body>
     </body>
 </html>

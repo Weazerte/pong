@@ -271,7 +271,7 @@ const camera = new THREE.PerspectiveCamera(100, canvas.width / canvas.height, 5,
 camera.position.z = 6;
 
 const geometry = new THREE.BoxGeometry();
-const player_left = new Player(-10, 0, 0, 1, 0.2, 'purple');
+const player_left = new Player(-10, 0, 0, 1, 0.2, 'green');
 player_left.sceneADD(scene);
 
 const player_right = new Player(10, 0, 0, 1, 0.2, 'blue');
