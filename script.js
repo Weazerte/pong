@@ -1,315 +1,123 @@
-import * as THREE from 'three';
+document.addEventListener('DOMContentLoaded', () => {
+    const mainContent = document.getElementById('main-content');
+    const navLinks = document.querySelectorAll('nav ul li a');
 
-const canvas = document.getElementById('gameCanvas');
-// ----------------- Player Class -----------------
+    const pages = {
+        home: `
+            <section id="home">
+                <h2>Bienvenue au Pong Game</h2>
+                <p>Profitez d'une expérience unique !</p>
+                <div class="gif-border">
+                    <img src="Utils/Windows.jpg" alt="Pong Game GIF">
+                </div>
+            </section>
+        `,
+        register: `
+            <section id="register">
+                <h2>Inscription</h2>
+                <form id="registration-form">
+                    <label for="alias">Alias :</label>
+                    <input type="text" id="alias" name="alias" required>
+                    <button class="button-54" type="submit">S'inscrire</button>
+                </form>
+            </section>
+        `,
+        tournament: `
+            <section id="tournament">
+                <h2>Tournoi</h2>
+                <div id="tournament-info">
+                    <p>Aucun tournoi en cours.</p>
+                </div>
+            </section>
+        `,
+        game: `
+            <section id="game">
+                <h2>Jeu Pong</h2>
+                <div id="PLscore" style="position: absolute; top: 20px; left: 20px; color: black; font-size: 20px;">
+                Player left Score: 0
+                </div>  
+                <div id="PRscore" style="position: absolute; top: 20px; right: 20px; color: black; font-size: 20px;">
+                Player right Score: 0
+                </div>
+                <canvas id="pongCanvas" width="1000" height="600"></canvas>
+                <script type="importmap">
+                    {
+                        "imports": {
+                        "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+                        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+                        }
+                    }
+                </script>
+                <script type="module" src="game.js"></script>
 
-class Player {
-    constructor(x, y, z, size, speed, color){
-        this.restX = x;
-        this.x = x;
-        this.restY = y;
-        this.y = y;
-        this.z = z;
-        this.size = size;
-        this.hitbox = size + 0.4;
-        this.speed = speed;
-        this.dy = 0;
-        this.color = color;
-        this.scoreCount = 0;
-    }
-    sceneADD(scene){
-        const geometry = new THREE.BoxGeometry();
-        const material = new THREE.MeshPhongMaterial({ color: this.color });
-        const cube = new THREE.Mesh(geometry, material);
-        this.pCube = cube;
-        cube.position.x = this.x;
-        cube.position.y = this.y;
-        cube.position.z = this.z;
+            </section>
+        `,
+        account: `
+            <section id="account">
+                <h2>Gestion de Compte</h2>
+                <form id="account-form">
+                    <label for="profile-pic">Photo de Profil :</label>
+                    <input type="file" id="profile-pic" name="profile-pic" accept="image/*">
+                    <label for="new-alias">Nouvel Alias :</label>
+                    <input type="text" id="new-alias" name="new-alias">
+                    <label for="new-password">Nouveau Mot de Passe :</label>
+                    <input type="password" id="new-password" name="new-password">
+                    <button class="button-54" type="submit">Mettre à Jour</button>
+                </form>
+            </section>
+        `
+    };
 
-        scene.add(cube);
-    }
-    
-    getx(){
-        return this.x;
-    }
+    navLinks.forEach(link => {
+        link.addEventListener('click', (event) => {
+            event.preventDefault();
+            const page = link.dataset.page;
+            mainContent.innerHTML = pages[page] || pages.home;
+            history.pushState({}, '', `#${page}`);
+            setupPageEvents();
+        });
+    });
 
-    gety(){
-        return this.y;
-    }
+    window.addEventListener('popstate', () => {
+        const page = location.hash.substring(1);
+        mainContent.innerHTML = pages[page] || pages.home;
+        setupPageEvents();
+    });
 
-    getz(){
-        return this.z;
-    }
+    const initialPage = location.hash.substring(1) || 'home';
+    mainContent.innerHTML = pages[initialPage];
+    setupPageEvents();
 
-    getwidth(){
-        return this.size;
-    }
-
-    getheight(){
-        return this.size;
-    }
-
-    getHitBox(){
-        return this.hitbox;
-    }
-
-    moveUp(){
-        if (this.y + this.size < 8)
-            this.dy += this.speed;
-    }
-    moveDown(){
-        if (this.y > -8)
-            this.dy -= this.speed;
-    }
-    moveLeft(){
-        this.dx -= this.speed;
-    }
-    moveRight(){
-        this.dx += this.speed;
-    }
-
-    incrementScore (){
-        this.scoreCount += 1;
-    }
-
-    getScore(){
-        return this.scoreCount;
-    }
-
-    resetPlayer(){
-        this.x = this.restX;
-        this.y = this.restY;
-        this.dy = 0;
-    }
-
-}
-
-// ----------------- Player related functions -----------------
-
-// Move the players based on key input
-function movePlayer(e) {
-    if (e.code === 'ArrowUp') {
-            player_right.moveUp();
-        // player_right.pCube.rotateZ(0.1);
-    } else if (e.code === 'ArrowDown') {
-            player_right.moveDown();
-    } else if (e.code === 'KeyW') {
-            player_left.moveUp();
-    } else if (e.code === 'KeyS') {
-            player_left.moveDown();
-    }
-}
-
-// Stop the players when the key is released
-function stopPlayer(e) {
-    if (e.code === 'ArrowUp' || e.code === 'ArrowDown') {
-        player_right.dy = 0;
-    } else if (e.code === 'KeyW' || e.code === 'KeyS') {
-        player_left.dy = 0;
-    }
-}
-
-// ----------------- Ball Class -----------------
-
-class ball {
-
-    constructor(x, y, z, width, height, speed, radius, color){
-        this.x = x;
-        this.resetX = x;
-        this.y = y;
-        this.resetY = y;
-        this.z = z;
-        this.width = width;
-        this.height = height;
-        this.speed = speed;
-        this.resetSpeed = speed;
-        this.radius = radius;
-        this.color = color;
-        this.direction_x = -1;
-        this.direction_y = 0;
-    }
-
-    sceneADD(scene){
-        const geometry = new THREE.SphereGeometry(this.radius, 32, 32);
-        const material = new THREE.MeshPhongMaterial({ color: this.color });
-        const sphere = new THREE.Mesh(geometry, material);
-        this.bSphere = sphere;
-        sphere.position.x = this.x;
-        sphere.position.y = this.y;
-        sphere.position.z = this.z;
-        scene.add(sphere);
-    }
-
-    isBallinPlayer(playerx, playery, playerWidth, playerHeight) {
-        // Extend the player's hitbox by the ball's radius
-        const playerLeft = playerx - this.radius;  // Extend left by ball radius
-        const playerRight = playerx + playerWidth + this.radius;  // Extend right by ball radius
-        const playerTop = playery - this.radius;  // Extend top by ball radius
-        const playerBottom = playery + playerHeight + this.radius;  // Extend bottom by ball radius
-    
-        // Check if the center of the ball is within the player's (extended) hitbox
-        if (this.x >= playerLeft && this.x <= playerRight &&
-            this.y >= playerTop && this.y <= playerBottom) {
-            return true;  // Ball is colliding with the paddle
-        }
-        return false;  // No collision
-    }
-    
-    isBallinYWall(){
-        if (this.y + this.radius >= 8 || this.y - this.radius <= -8) {
-            return true;
-        }
-        return false;
-    }
-
-    isBallinXWall(){
-        if (this.x + this.radius >= 15 || this.x - this.radius <= -15) {
-            return true;
-        }
-        return false;
-    }
-
-    wichDirection(){
-        if (this.y > player_left.gety()){
-            return 1;
-        }else if (this.y === player_left.gety()){
-            return 0;
-        }else {
-            return -1;
-        }
-    }
-
-    // Move the ball
-    moveBall() {
-        // Move the ball based on direction
-        if (this.direction_x === -1) {
-            // Check collision with the left paddle
-            if (this.isBallinPlayer(player_left.getx(), player_left.gety(), player_left.getwidth(), player_left.getheight())) {
-                this.direction_x = 1;  // Reverse horizontal direction
-                this.direction_y = this.wichDirection();  // Update vertical direction
-                this.x = player_left.getx() + player_left.getwidth() + this.radius;  // Move ball just outside the paddle
-            } else {
-                if (this.isBallinYWall()) {
-                    this.direction_y *= -1;  // Reverse vertical direction when hitting top/bottom walls
+    function setupPageEvents() {
+        const registrationForm = document.getElementById('registration-form');
+        if (registrationForm) {
+            registrationForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const alias = document.getElementById('alias').value;
+                if (alias) {
+                    alert(`Inscription réussie avec l'alias : ${alias}`);
                 }
-                this.x -= this.speed;  // Continue moving left
-                this.y += this.speed * this.direction_y;  // Adjust vertical position
-            }
-        } else if (this.direction_x === 1) {
-            // Check collision with the right paddle
-            if (this.isBallinPlayer(player_right.getx(), player_right.gety(), player_right.getwidth(), player_right.getheight())) {
-                this.direction_x = -1;  // Reverse horizontal direction
-                this.direction_y = this.wichDirection();  // Update vertical direction
-                this.x = player_right.getx() - this.radius;  // Move ball just outside the paddle
-            } else {
-                if (this.isBallinYWall()) {
-                    this.direction_y *= -1;  // Reverse vertical direction when hitting top/bottom walls
+            });
+        }
+
+        const accountForm = document.getElementById('account-form');
+        if (accountForm) {
+            accountForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const profilePic = document.getElementById('profile-pic').files[0];
+                const newAlias = document.getElementById('new-alias').value;
+                const newPassword = document.getElementById('new-password').value;
+                if (profilePic || newAlias || newPassword) {
+                    alert(`Compte mis à jour avec succès !`);
+                    // Ajoutez ici la logique pour mettre à jour le compte dans le backend
                 }
-                this.x += this.speed;  // Continue moving right
-                this.y += this.speed * this.direction_y;  // Adjust vertical position
-            }
+            });
+        }
+
+        const pongCanvas = document.getElementById('pongCanvas');
+        if (pongCanvas) {
+            const ctx = pongCanvas.getContext('2d');
+            // Code pour dessiner le jeu Pong ici
         }
     }
-    
-    resetBall(xdir){
-        this.x = this.resetX;
-        this.y = this.resetY;
-        this.speed = this.resetSpeed;
-        this.direction_x = xdir;
-        this.direction_y = 0;
-    }
-
-}
-
-// ----------------- Ball and Player related functions -----------------
-
-function updatePos() {
-    player_right.y += player_right.dy;
-    player_left.y += player_left.dy;
-
-    if (player_right.y + player_right.getheight() > 8) {
-        player_right.y = 8 - player_right.getheight();
-    } else if (player_right.y < -8) {
-        player_right.y = -8;
-    }
-
-    if (player_left.y + player_left.getheight() > 8) {
-        player_left.y = 8 - player_left.getheight();
-    } else if (player_left.y < -8) {
-        player_left.y = -8;
-    }
-
-    player_right.pCube.position.y = player_right.y;
-    player_left.pCube.position.y = player_left.y;
-
-    balll.bSphere.position.x = balll.x;
-    balll.bSphere.position.y = balll.y;
-}
-
-function checkXCollision(){
-    if (balll.isBallinXWall()){
-        if (balll.x < 0){
-            player_right.incrementScore();
-            balll.resetBall(-1);
-        }else {
-            player_left.incrementScore();
-            balll.resetBall(1);
-        }
-        player_left.resetPlayer();
-        player_right.resetPlayer();
-        return true;
-    }
-    return false;
-}
-
-// ----------------- 3D setup -----------------
-
-const renderer = new THREE.WebGLRenderer({ canvas });
-renderer.setSize(canvas.width, canvas.height);
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(100, canvas.width / canvas.height, 5, 100);
-camera.position.z = 6;
-
-const geometry = new THREE.BoxGeometry();
-const player_left = new Player(-10, 0, 0, 1, 0.2, 'green');
-player_left.sceneADD(scene);
-
-const player_right = new Player(10, 0, 0, 1, 0.2, 'blue');
-player_right.sceneADD(scene);
-
-const balll = new ball(0, 0, 0, 1, 1, 0.1, 0.4, 'red');
-balll.sceneADD(scene);
-
-const light = new THREE.PointLight('', 11111, 100);
-scene.add(light);
-light.position.set(0, 0, 20);
-
-// ----------------- ath function -----------------
-
-const updateScore = function(){
-    document.getElementById('PLscore').innerText = `Score: ${player_left.getScore()}`;
-    document.getElementById('PRscore').innerText = `Score: ${player_right.getScore()}`;
-}
-
-document.addEventListener('keydown', movePlayer);
-document.addEventListener('keyup', stopPlayer);
-
-function getMousePos(canvas, event) {
-    const rect = canvas.getBoundingClientRect(); // Get canvas bounds
-    const x = event.clientX - rect.left;         // Adjust X coordinate
-    const y = event.clientY - rect.top;          // Adjust Y coordinate
-    return { x: x, y: y };
-}
-
-const animate = function () {
-    requestAnimationFrame(animate);
-    if (!checkXCollision()){    
-        updateScore();
-        updatePos();
-        balll.moveBall();
-        renderer.render(scene, camera);
-    }
-};
-
-
-animate();
+});
